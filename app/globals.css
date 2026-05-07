@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'null_ong2-design-system/styles.css';
+
+:root {
+  --admin-bg: #f7f8fa;
+  --admin-surface: #ffffff;
+  --admin-border: #e4e7ec;
+  --admin-text: #1f2937;
+  --admin-text-muted: #6b7280;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo',
+    sans-serif;
+}
