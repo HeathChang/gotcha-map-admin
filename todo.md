@@ -110,7 +110,7 @@ npm run db:migrate
 npm run db:seed:admin -- --email=ops@gachamap.io --password=admin1234 --name=운영자 --role=super_admin
 
 # BE / FE dev 서버
-npm run dev          # gachamap-be → http://localhost:8080
+npm run dev          # gachamap-be → http://localhost:8060
 yarn dev             # gachamap-admin → http://localhost:3000
 
 # 어드민 로그인

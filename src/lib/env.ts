@@ -10,7 +10,7 @@ function readEnv(key: string, fallback?: string): string {
 export const ENV = {
   apiBaseUrl: readEnv(
     'NEXT_PUBLIC_API_BASE_URL',
-    'http://localhost:3001/api/v1',
+    'http://localhost:8060/api/v1',
   ),
   useMockApi: readEnv('NEXT_PUBLIC_USE_MOCK_API', 'true') === 'true',
 } as const;
