@@ -43,8 +43,23 @@ export interface AdminInquiry {
 
 export interface ListAdminInquiryParams {
   status?: InquiryStatus;
+  q?: string;
   page?: number;
   limit?: number;
+}
+
+export interface AdminInquiryStats {
+  countByStatus: {
+    pending: number;
+    processing: number;
+    completed: number;
+    rejected: number;
+  };
+  avgResponseHours: number | null;
+  medianResponseHours: number | null;
+  /** 24h SLA 초과 미답변 건수. */
+  overdueCount: number;
+  answeredSampleSize: number;
 }
 
 export interface AnswerInquiryPayload {
