@@ -17,7 +17,10 @@ import {
   loadStoredSession,
   persistSession,
 } from '@/lib/auth/sessionStorage';
-import { setActiveSession } from '@/lib/auth/sessionToken';
+import {
+  registerSessionUpdater,
+  setActiveSession,
+} from '@/lib/auth/sessionToken';
 
 /**
  * 무활동 자동 로그아웃 임계값.
@@ -76,6 +79,15 @@ export function SessionProvider({ children }: SessionProviderProps) {
     setActiveSession(null);
     clearStoredSession();
   }, []);
+
+  // axios 인터셉터가 401 → /admin/refresh 회전 후 새 세션을 푸시할 수 있게 다리 등록.
+  useEffect(() => {
+    registerSessionUpdater((next) => {
+      if (next) setSession(next);
+      else clearSession();
+    });
+    return () => registerSessionUpdater(null);
+  }, [setSession, clearSession]);
 
   // 활동 이벤트 리스너: 세션이 살아있을 때만 부착한다.
   useEffect(() => {
