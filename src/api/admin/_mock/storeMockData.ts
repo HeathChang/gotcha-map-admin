@@ -1,0 +1,47 @@
+import type { AdminStore } from '@/types/store.types';
+
+// 강남·홍대·신촌 일대 — 매장 CRUD UX 확인용 mock.
+export const MOCK_STORES: AdminStore[] = [
+  {
+    storeId: 'store-001',
+    name: '강남역 캡슐카페',
+    address: '서울특별시 강남구 강남대로 396',
+    lat: 37.4979,
+    lon: 127.0276,
+    phone: '02-555-1234',
+    description: '강남역 11번 출구 도보 2분. 산리오·치이카와 정식 입고.',
+    imageUrl: null,
+    openingHours: '매일 11:00 ~ 23:00',
+    rating: 4.6,
+    createdAt: '2026-01-15T03:11:00.000Z',
+    updatedAt: '2026-04-20T05:22:00.000Z',
+  },
+  {
+    storeId: 'store-002',
+    name: '홍대 가챠존',
+    address: '서울특별시 마포구 양화로 152',
+    lat: 37.5563,
+    lon: 126.9226,
+    phone: '02-333-7788',
+    description: '홍대입구역 9번 출구. 90+ 머신 보유.',
+    imageUrl: null,
+    openingHours: '평일 12:00 ~ 22:00 / 주말 11:00 ~ 24:00',
+    rating: 4.4,
+    createdAt: '2026-02-03T08:00:00.000Z',
+    updatedAt: '2026-03-12T01:40:00.000Z',
+  },
+  {
+    storeId: 'store-003',
+    name: '신촌 토이박스',
+    address: '서울특별시 서대문구 신촌로 89',
+    lat: 37.5559,
+    lon: 126.9362,
+    phone: null,
+    description: '신상 가챠 빠른 입고 / 한정판 위주.',
+    imageUrl: null,
+    openingHours: '매일 13:00 ~ 22:00',
+    rating: 4.2,
+    createdAt: '2026-03-22T11:25:00.000Z',
+    updatedAt: '2026-03-22T11:25:00.000Z',
+  },
+];
