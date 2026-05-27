@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from 'null_ong2-design-system';
 import {
@@ -15,16 +14,12 @@ import type {
   UpdateAdminStorePayload,
 } from '@/types/store.types';
 import { AdminApiError } from '@/lib/axios/adminAxios';
+import { usePaginatedSearch } from '@/lib/hooks/usePaginatedSearch';
+import { useCrudModal, type CrudModalState } from '@/lib/hooks/useCrudModal';
 import type { StoreFormValues } from '@/ui/stores/StoreForm/StoreForm.types';
 
 const QUERY_KEY = ['admin', 'stores'] as const;
 const PAGE_SIZE = 20;
-const SEARCH_DEBOUNCE_MS = 300;
-
-type ModalState =
-  | { mode: 'closed' }
-  | { mode: 'create' }
-  | { mode: 'edit'; store: AdminStore };
 
 interface UseStoreListResult {
   stores: ReadonlyArray<AdminStore>;
@@ -37,10 +32,9 @@ interface UseStoreListResult {
   page: number;
   pageSize: number;
   total: number;
-  totalPages: number;
   setPage: (next: number) => void;
 
-  modal: ModalState;
+  modal: CrudModalState<AdminStore>;
   openCreate: () => void;
   openEdit: (store: AdminStore) => void;
   closeModal: () => void;
@@ -71,19 +65,9 @@ export function useStoreList(): UseStoreListResult {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const [searchInput, setSearchInput] = useState('');
-  const [debouncedQ, setDebouncedQ] = useState('');
-  const [page, setPage] = useState(1);
-  const [modal, setModal] = useState<ModalState>({ mode: 'closed' });
-
-  useEffect(() => {
-    const id = setTimeout(() => setDebouncedQ(searchInput.trim()), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(id);
-  }, [searchInput]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedQ]);
+  const { searchInput, setSearchInput, debouncedQ, page, setPage } =
+    usePaginatedSearch();
+  const { modal, openCreate, openEdit, close } = useCrudModal<AdminStore>();
 
   const query = useQuery({
     queryKey: [...QUERY_KEY, { q: debouncedQ, page }] as const,
@@ -96,7 +80,7 @@ export function useStoreList(): UseStoreListResult {
     onSuccess: () => {
       toast.success('매장이 등록되었습니다.');
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      setModal({ mode: 'closed' });
+      close();
     },
     onError: (error: unknown) => {
       const message =
@@ -111,7 +95,7 @@ export function useStoreList(): UseStoreListResult {
     onSuccess: () => {
       toast.success('매장이 수정되었습니다.');
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
-      setModal({ mode: 'closed' });
+      close();
     },
     onError: (error: unknown) => {
       const message =
@@ -136,7 +120,7 @@ export function useStoreList(): UseStoreListResult {
   const submitForm = (values: StoreFormValues) => {
     const payload = stripEmpty(values);
     if (modal.mode === 'edit') {
-      updateMutation.mutate({ storeId: modal.store.storeId, payload });
+      updateMutation.mutate({ storeId: modal.entity.storeId, payload });
     } else {
       createMutation.mutate(payload);
     }
@@ -163,13 +147,12 @@ export function useStoreList(): UseStoreListResult {
     page,
     pageSize: PAGE_SIZE,
     total: query.data?.pagination.total ?? 0,
-    totalPages: query.data?.pagination.totalPages ?? 1,
     setPage,
 
     modal,
-    openCreate: () => setModal({ mode: 'create' }),
-    openEdit: (store) => setModal({ mode: 'edit', store }),
-    closeModal: () => setModal({ mode: 'closed' }),
+    openCreate,
+    openEdit,
+    closeModal: close,
 
     submitForm,
     isSubmitting: createMutation.isPending || updateMutation.isPending,

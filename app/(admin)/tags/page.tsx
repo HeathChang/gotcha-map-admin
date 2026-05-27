@@ -1,10 +1,5 @@
-import { PlaceholderPage } from '@/ui/common/PlaceholderPage/PlaceholderPage.ui';
+import { TagListContainer } from '@/container/tags/TagList/TagList.container';
 
 export default function TagsPage() {
-  return (
-    <PlaceholderPage
-      title="태그 관리"
-      description="태그 CRUD 및 relationType 분류 관리."
-    />
-  );
+  return <TagListContainer />;
 }

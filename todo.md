@@ -1,7 +1,7 @@
 # GachaMap Admin — Todo
 
 > Single Source of Truth: [.ruler/vision.md](.ruler/vision.md)
-> 최종 갱신: 2026-05-03
+> 최종 갱신: 2026-05-27
 
 ---
 
@@ -29,7 +29,12 @@
 - [x] **문의 관리** — `/inquiries`
   - InquiryTable / InquiryStatusBadge / InquiryAnswerForm (Presentational)
   - useInquiryList + InquiryList.container (Query + Mutation, 모달, 상태 필터)
-- [x] Placeholder 페이지: `/users`, `/products`, `/stores`, `/announcements`, `/tags`, `/audit-logs` (내비 노출용)
+- [x] **매장 관리** — `/stores` (목록·검색·CRUD, StoreForm/StoreTable)
+- [x] **태그 관리** — `/tags` (목록·검색·relationType 필터·CRUD, TagForm/TagTable)
+- [x] **공지 관리** — `/announcements` (CRUD + 인라인 isActive Switch 토글 + 활성 필터)
+- [x] **감사 로그** — `/audit-logs` (읽기 전용, targetType/action 필터, diff JSON 모달, super_admin)
+- [x] 공통 컴포넌트 추출 — `useCrudModal`·`usePaginatedSearch`·`Pagination`·`ListStateView`
+- [x] Placeholder 잔여: `/users`, `/products` (내비 노출용)
 
 ### 백엔드 (어드민 영역만)
 - [x] 마이그레이션 `0004_admin.sql` — `admin_users`, `admin_audit_logs`, `inquiries.answered_by_admin_id`
@@ -40,9 +45,13 @@
 - [x] `adminTokens.service.ts` — `issueAdminTokens` / `rotateAdminRefresh` / `revokeAdminRefresh` (1회용 + family rotation + 재사용 감지)
 - [x] `admin.service.ts` — `loginAdmin`, `getAdminProfile`, `writeAuditLog` (vision §3 mutation 100% 기록 충족)
 - [x] `adminInquiry.service.ts` — `listAdminInquiries` (페이지네이션 + 상태 필터 + JOIN users), `answerAdminInquiry` (트랜잭션 + 자동 감사 로그)
-- [x] 라우트: `POST /admin/login`, `POST /admin/logout`, `GET /admin/me`, `GET /admin/inquiries`, `PATCH /admin/inquiries/:inquiryId`
+- [x] 라우트: `POST /admin/login`, `POST /admin/logout`, `GET /admin/me`, `POST /admin/refresh`, `GET /admin/inquiries(+/stats)`, `PATCH /admin/inquiries/:id`
+- [x] **매장 라우트** — `GET/POST /admin/stores`, `PATCH/DELETE /admin/stores/:storeId` (store.service 재사용)
+- [x] **태그 라우트** — `GET/POST /admin/tags`, `PATCH/DELETE /admin/tags/:tagId` (`adminTag.service`, 감사 로그 기록)
+- [x] **공지 라우트** — `GET/POST /admin/announcements`, `PATCH/DELETE /admin/announcements/:announceId` (`adminAnnouncement.service`, isActive 토글, 감사 로그 기록)
+- [x] **감사 로그 라우트** — `GET /admin/audit-logs` (`adminAuditLog.service`, admin_users JOIN, super_admin 전용, 읽기 전용)
 - [x] 시드 스크립트 — `npm run db:seed:admin -- --email=... --password=... --role=...`
-- [x] 백엔드 테스트 추가 — schema 검증(10건) + adminAuth 미들웨어(6건). 전체 82 passed
+- [x] 백엔드 테스트 — 전체 82 passed, `npm run build`(postman 48 routes + tsc) 통과
 - [x] **E2E curl 검증** — login → me → inquiries list → PATCH answer → audit_log row 자동 생성 + CORS preflight 모두 통과
 
 ---
@@ -59,13 +68,16 @@
 
 > Inquiries와 동일한 패턴: BE(migration → service → controller → route) + FE(api → ui → container → page)
 
-### 우선순위 결정 필요
-- [ ] **회원 관리** (`/users`) — 목록/검색/상태(`userStatus`) 변경, PII 마스킹 (super_admin만 해제)
-- [ ] **제품 관리** (`/products`) — CRUD, 이미지 다중 업로드, 태그 연결, isNew/isPopular/genderTarget 플래그, 스토어별 가격
-- [ ] **스토어 관리** (`/stores`) — CRUD, 위경도+주소, 활성/비활성, 취급 제품 매핑
-- [ ] **공지 관리** (`/announcements`) — CRUD, isActive 토글
-- [ ] **태그 관리** (`/tags`) — CRUD, relationType 분류
-- [ ] **감사 로그** (`/audit-logs`) — 목록/필터 (읽기 전용; super_admin만)
+### 잔여 도메인 (남은 placeholder 2종)
+- [ ] **회원 관리** (`/users`) — 목록/검색/상태(`userStatus`) 변경, PII 마스킹 (super_admin만 해제). BE `adminUser.service` + `/admin/users` 신규 필요
+- [ ] **제품 관리** (`/products`) — CRUD, 이미지 다중 업로드, 태그 연결, isNew/isPopular/genderTarget 플래그, 스토어별 가격. BE `adminProduct.service` + `/admin/products` 신규 필요 (가장 큼)
+
+### 완료 (2026-05-27)
+- [x] **스토어 관리** (`/stores`)
+- [x] **태그 관리** (`/tags`) — relationType 분류 필터
+- [x] **공지 관리** (`/announcements`) — isActive 인라인 토글
+- [x] **감사 로그** (`/audit-logs`) — targetType/action 필터, diff 모달, super_admin 전용
+- 비고: 태그·공지 mutation 은 `writeAuditLog` 로 감사 기록(create/update/delete diff). 매장 CRUD 는 아직 감사 로그 미기록 — 추후 보강 대상.
 
 ### 인증 보강 (모든 도메인 공용)
 - [ ] FE refresh token 흐름 — 401 응답 시 `/admin/refresh` 호출해 access 갱신 후 원 요청 재시도

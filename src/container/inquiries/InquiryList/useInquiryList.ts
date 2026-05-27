@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from 'null_ong2-design-system';
 import {
@@ -15,11 +15,11 @@ import type {
   InquiryStatus,
 } from '@/types/admin.types';
 import { AdminApiError } from '@/lib/axios/adminAxios';
+import { usePaginatedSearch } from '@/lib/hooks/usePaginatedSearch';
 
 const QUERY_KEY = ['admin', 'inquiries'] as const;
 const STATS_KEY = ['admin', 'inquiries', 'stats'] as const;
 const PAGE_SIZE = 20;
-const SEARCH_DEBOUNCE_MS = 300;
 
 const ALL_STATUSES: ReadonlyArray<InquiryStatus> = [
   'pending',
@@ -66,21 +66,11 @@ export function useInquiryList(): UseInquiryListResult {
   const [statusFilter, setStatusFilter] = useState<ReadonlySet<InquiryStatus>>(
     () => new Set(),
   );
-  const [searchInput, setSearchInput] = useState('');
-  const [debouncedQ, setDebouncedQ] = useState('');
-  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<AdminInquiry | null>(null);
 
-  // 검색어 디바운스: 입력마다 BE 호출하지 않도록 한다.
-  useEffect(() => {
-    const id = setTimeout(() => setDebouncedQ(searchInput.trim()), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(id);
-  }, [searchInput]);
-
-  // 검색어 / 필터 변경 시 첫 페이지로.
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedQ, statusFilter]);
+  // 검색어 / 필터 변경 시 첫 페이지로. (statusFilter 변경도 reset 트리거)
+  const { searchInput, setSearchInput, debouncedQ, page, setPage } =
+    usePaginatedSearch({ resetPageDeps: [statusFilter] });
 
   // BE 는 단일 status 만 지원하므로,
   // - 0개 또는 2개 이상 선택: 서버는 미필터 + 클라이언트 필터링
