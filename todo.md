@@ -1,7 +1,7 @@
 # GachaMap Admin — Todo
 
 > Single Source of Truth: [.ruler/vision.md](.ruler/vision.md)
-> 최종 갱신: 2026-05-27
+> 최종 갱신: 2026-05-30 — admin v1 화면 7종 전부 구현 완료 (login + inquiries + stores + tags + announcements + audit-logs + users + products)
 
 ---
 
@@ -33,8 +33,9 @@
 - [x] **태그 관리** — `/tags` (목록·검색·relationType 필터·CRUD, TagForm/TagTable)
 - [x] **공지 관리** — `/announcements` (CRUD + 인라인 isActive Switch 토글 + 활성 필터)
 - [x] **감사 로그** — `/audit-logs` (읽기 전용, targetType/action 필터, diff JSON 모달, super_admin)
+- [x] **회원 관리** — `/users` (목록·검색·상태 필터·상태 변경 모달, BE에서 PII 자동 마스킹: super_admin 만 풀 노출)
+- [x] **제품 관리** — `/products` (CRUD, 갤러리 이미지 URL 다중 입력, 태그 chip multi-select, 노출 플래그 + 성별 타겟, 상세 페치 분리)
 - [x] 공통 컴포넌트 추출 — `useCrudModal`·`usePaginatedSearch`·`Pagination`·`ListStateView`
-- [x] Placeholder 잔여: `/users`, `/products` (내비 노출용)
 
 ### 백엔드 (어드민 영역만)
 - [x] 마이그레이션 `0004_admin.sql` — `admin_users`, `admin_audit_logs`, `inquiries.answered_by_admin_id`
@@ -50,8 +51,11 @@
 - [x] **태그 라우트** — `GET/POST /admin/tags`, `PATCH/DELETE /admin/tags/:tagId` (`adminTag.service`, 감사 로그 기록)
 - [x] **공지 라우트** — `GET/POST /admin/announcements`, `PATCH/DELETE /admin/announcements/:announceId` (`adminAnnouncement.service`, isActive 토글, 감사 로그 기록)
 - [x] **감사 로그 라우트** — `GET /admin/audit-logs` (`adminAuditLog.service`, admin_users JOIN, super_admin 전용, 읽기 전용)
+- [x] **회원 라우트** — `GET /admin/users`, `PATCH /admin/users/:userId/status` (`adminUser.service`, super_admin 외엔 이메일 마스킹, 상태 변경 감사 기록)
+- [x] **제품 라우트** — `GET/POST /admin/products`, `GET/PATCH/DELETE /admin/products/:productId` (`adminProduct.service`, 트랜잭션 + 이미지/태그 동시 갱신, FK CASCADE)
+- [x] **매장 감사 로그 보강** — `store.create/update/delete` 도 `writeAuditLog` 기록 (vision §3 mutation 100% 충족)
 - [x] 시드 스크립트 — `npm run db:seed:admin -- --email=... --password=... --role=...`
-- [x] 백엔드 테스트 — 전체 82 passed, `npm run build`(postman 48 routes + tsc) 통과
+- [x] 백엔드 테스트 — 전체 82 passed, `npm run build`(postman 55 routes + tsc) 통과
 - [x] **E2E curl 검증** — login → me → inquiries list → PATCH answer → audit_log row 자동 생성 + CORS preflight 모두 통과
 
 ---
@@ -66,29 +70,22 @@
 
 ## 다음 단계 (v1 In Scope, vision §4)
 
-> Inquiries와 동일한 패턴: BE(migration → service → controller → route) + FE(api → ui → container → page)
+> 화면 7종 모두 완료. 남은 항목은 검증·테스트·운영 보조뿐.
 
-### 잔여 도메인 (남은 placeholder 2종)
-- [ ] **회원 관리** (`/users`) — 목록/검색/상태(`userStatus`) 변경, PII 마스킹 (super_admin만 해제). BE `adminUser.service` + `/admin/users` 신규 필요
-- [ ] **제품 관리** (`/products`) — CRUD, 이미지 다중 업로드, 태그 연결, isNew/isPopular/genderTarget 플래그, 스토어별 가격. BE `adminProduct.service` + `/admin/products` 신규 필요 (가장 큼)
+### v1 잔여
+- [ ] **브라우저 인터랙티브 검증** — 실 브라우저에서 8개 화면(login + 7 nav) 클릭 동선 검증 (현재 typecheck/lint/build·E2E curl 까지만)
+- [ ] **어드민 controller/service 통합 테스트** — 현재 schema(`admin.schema.test.ts`) + middleware(`adminAuth.middleware.test.ts`)만. controller/service 레벨 테스트 부재
+- [ ] **제품-스토어 가격 매핑 편집 UX** — 현재 BE에 `store_products` 스키마는 있으나 어드민 편집 화면 없음. 제품 상세에서 매장별 가격 추가/수정 (별도 패널 또는 페이지)
 
-### 완료 (2026-05-27)
-- [x] **스토어 관리** (`/stores`)
-- [x] **태그 관리** (`/tags`) — relationType 분류 필터
-- [x] **공지 관리** (`/announcements`) — isActive 인라인 토글
-- [x] **감사 로그** (`/audit-logs`) — targetType/action 필터, diff 모달, super_admin 전용
-- 비고: 태그·공지 mutation 은 `writeAuditLog` 로 감사 기록(create/update/delete diff). 매장 CRUD 는 아직 감사 로그 미기록 — 추후 보강 대상.
+### 인증 보강 — 완료
+- [x] FE refresh token 흐름 (401 → /admin/refresh → 재시도, 1073abf)
+- [x] BE `POST /admin/refresh` 라우트 (249f814)
+- [x] 30분 무활동 자동 로그아웃 (SessionProvider idle 타이머 + 활동 이벤트 리스너 + 1분 검사)
 
-### 인증 보강 (모든 도메인 공용)
-- [ ] FE refresh token 흐름 — 401 응답 시 `/admin/refresh` 호출해 access 갱신 후 원 요청 재시도
-- [ ] BE에 `POST /admin/refresh` 라우트 노출 (서비스 함수는 이미 있음)
-- [ ] 30분 무활동 자동 로그아웃 (vision §7)
-- [ ] 어드민 controller/service 통합 테스트 (현재 schema + middleware만)
-
-### 운영 편의
-- [ ] 목록 페이지 공통 컴포넌트 추출 — Table, Pagination, FilterBar, Toolbar (현재는 Inquiries에 인라인)
-- [ ] 페이지네이션 UI (현재 단순 limit=20만 호출)
-- [ ] DBeaver/터미널에서 자주 보는 쿼리 모음 — `docs/db-recipes.md`
+### 운영 편의 — 완료
+- [x] 목록 페이지 공통 컴포넌트 추출 (`useCrudModal`·`usePaginatedSearch`·`Pagination`·`ListStateView`)
+- [x] 페이지네이션 UI (Pagination 컴포넌트, 이전/다음 + 범위 표시)
+- [ ] DBeaver/터미널에서 자주 보는 쿼리 모음 — `docs/db-recipes.md` (운영 부담 감소용, 우선순위 낮음)
 
 ---
 
@@ -101,12 +98,12 @@
 
 ---
 
-## Open Questions (vision §9 — 답변 필요)
+## Open Questions (vision §9)
 
 - [ ] 운영자 SSO 사용 여부 (Google Workspace) vs. 자체 ID/PW
 - [ ] 감사 로그 보존 기간 (3개월 / 1년 / 무기한)
-- [ ] 이미지 호스팅 — 백엔드 `/uploads` 로컬 vs. S3/CDN 마이그레이션 시점
-- [ ] 운영자 권한별 PII(이메일/전화번호) 접근 정책 — super_admin만 마스킹 해제? 또는 다른 모델?
+- [ ] 이미지 호스팅 — 백엔드 `/uploads` 로컬 vs. S3/CDN 마이그레이션 시점 (현재 제품 어드민은 URL 입력만 지원)
+- [x] 운영자 권한별 PII 접근 정책 — **v1 디폴트 결정**: super_admin 만 이메일 풀 노출, 그 외(support_staff)는 자동 마스킹
 
 ---
 

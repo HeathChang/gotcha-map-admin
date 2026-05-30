@@ -7,6 +7,8 @@ export const AUDIT_TARGET_TYPE_OPTIONS: ReadonlyArray<{ value: string; label: st
   { value: 'tag', label: '태그' },
   { value: 'announcement', label: '공지' },
   { value: 'store', label: '매장' },
+  { value: 'product', label: '제품' },
+  { value: 'user', label: '회원' },
 ];
 
 export const AUDIT_ACTION_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
@@ -18,6 +20,13 @@ export const AUDIT_ACTION_OPTIONS: ReadonlyArray<{ value: string; label: string 
   { value: 'announcement.create', label: '공지 생성' },
   { value: 'announcement.update', label: '공지 수정' },
   { value: 'announcement.delete', label: '공지 삭제' },
+  { value: 'store.create', label: '매장 생성' },
+  { value: 'store.update', label: '매장 수정' },
+  { value: 'store.delete', label: '매장 삭제' },
+  { value: 'product.create', label: '제품 생성' },
+  { value: 'product.update', label: '제품 수정' },
+  { value: 'product.delete', label: '제품 삭제' },
+  { value: 'user.status', label: '회원 상태 변경' },
 ];
 
 const ACTION_LABEL_MAP: Record<string, string> = Object.fromEntries(
@@ -37,6 +46,7 @@ export function actionVariant(action: string): BadgeVariant {
       return 'success';
     case 'update':
     case 'answer':
+    case 'status':
       return 'info';
     case 'delete':
       return 'danger';
