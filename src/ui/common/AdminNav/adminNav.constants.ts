@@ -27,6 +27,11 @@ export const ADMIN_NAV_ITEMS: ReadonlyArray<AdminNavItem> = [
     allowedRoles: ['super_admin', 'content_manager'],
   },
   {
+    href: '/banners',
+    label: '배너',
+    allowedRoles: ['super_admin', 'content_manager'],
+  },
+  {
     href: '/tags',
     label: '태그',
     allowedRoles: ['super_admin', 'content_manager'],
