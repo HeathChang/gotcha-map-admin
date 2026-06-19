@@ -4,7 +4,8 @@ export const MOCK_ADMIN_USER: AdminUser = {
   adminId: 'admin-1',
   email: 'ops@gachamap.io',
   name: '운영자',
-  role: 'super_admin',
+  role: 'admin',
+  storeId: null,
   createdAt: '2026-01-01T00:00:00.000Z',
 };
 

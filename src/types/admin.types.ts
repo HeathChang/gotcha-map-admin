@@ -1,10 +1,14 @@
-export type AdminRole = 'super_admin' | 'content_manager' | 'support_staff';
+// gotcha-map-policy §2: admin(전권) / staff(중앙 운영) / member(매장 점주).
+// member 는 운영 역할이며 소비자 회원(앱 user)과 다르다.
+export type AdminRole = 'admin' | 'staff' | 'member';
 
 export interface AdminUser {
   adminId: string;
   email: string;
   name: string;
   role: AdminRole;
+  // member 의 담당 매장 (admin/staff 는 null). /my-store 진입·소유권에 사용.
+  storeId: string | null;
   createdAt: string;
 }
 

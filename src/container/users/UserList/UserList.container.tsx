@@ -41,7 +41,7 @@ export function UserListContainer() {
           회원 관리
         </Heading>
         <Text size="sm" color="muted">
-          회원 목록을 조회하고 상태(활성/비활성/탈퇴)를 변경합니다. 이메일은 super_admin 만 풀 노출되며, 그 외 운영자는 자동 마스킹됩니다.
+          회원 목록을 조회하고 상태(활성/비활성/탈퇴)를 변경합니다. 이메일은 admin·staff 에게 풀 노출됩니다.
         </Text>
       </Stack>
 
