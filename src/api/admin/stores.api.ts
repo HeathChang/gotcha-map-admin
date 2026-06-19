@@ -56,6 +56,17 @@ export async function listAdminStores(
   return data;
 }
 
+export async function getAdminStore(storeId: string): Promise<AdminStore> {
+  if (ENV.useMockApi) {
+    const found = MOCK_STATE.find((it) => it.storeId === storeId);
+    if (!found) throw new Error(`Store not found: ${storeId}`);
+    return delay({ ...found });
+  }
+
+  const { data } = await adminAxios.get<AdminStore>(`/admin/stores/${storeId}`);
+  return data;
+}
+
 export async function createAdminStore(
   payload: CreateAdminStorePayload,
 ): Promise<AdminStore> {
