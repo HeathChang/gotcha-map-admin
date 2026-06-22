@@ -37,7 +37,7 @@ export function AuditLogListContainer() {
           감사 로그
         </Heading>
         <Text size="sm" color="muted">
-          운영자의 모든 쓰기 작업 기록입니다. 읽기 전용이며 super_admin 만 조회할 수 있습니다.
+          운영자의 모든 쓰기 작업 기록입니다. 읽기 전용이며 admin 만 조회할 수 있습니다.
         </Text>
       </Stack>
 

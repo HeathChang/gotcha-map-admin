@@ -5,7 +5,13 @@ import clsx from 'clsx';
 import { Button, Text } from 'null_ong2-design-system';
 import type { StoreTableProps } from './StoreTable.types';
 
-export function StoreTable({ stores, onEdit, onDelete, selectedStoreId }: StoreTableProps) {
+export function StoreTable({
+  stores,
+  onEdit,
+  onDelete,
+  onManageProducts,
+  selectedStoreId,
+}: StoreTableProps) {
   if (stores.length === 0) {
     return (
       <div className="rounded-md border border-admin-border bg-admin-surface p-8 text-center">
@@ -26,7 +32,7 @@ export function StoreTable({ stores, onEdit, onDelete, selectedStoreId }: StoreT
             <th className="w-28 px-4 py-2">위경도</th>
             <th className="w-20 px-4 py-2">평점</th>
             <th className="w-32 px-4 py-2">수정일</th>
-            <th className="w-32 px-4 py-2 text-right">액션</th>
+            <th className="w-52 px-4 py-2 text-right">액션</th>
           </tr>
         </thead>
         <tbody>
@@ -65,6 +71,13 @@ export function StoreTable({ stores, onEdit, onDelete, selectedStoreId }: StoreT
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => onManageProducts(store)}
+                    >
+                      상품·가격
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => onEdit(store)}>
                       수정
                     </Button>

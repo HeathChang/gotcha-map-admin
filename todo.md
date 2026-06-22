@@ -1,7 +1,7 @@
 # GachaMap Admin — Todo
 
-> Single Source of Truth: [.ruler/vision.md](.ruler/vision.md)
-> 최종 갱신: 2026-05-30 — admin v1 화면 7종 전부 구현 완료 (login + inquiries + stores + tags + announcements + audit-logs + users + products)
+> Single Source of Truth: [ruler/vision.md](ruler/vision.md)
+> 최종 갱신: 2026-06-15 — admin v1 화면 9종 전부 구현 완료 (login + inquiries + stores + tags + announcements + banners + audit-logs + users + products)
 
 ---
 
@@ -32,6 +32,7 @@
 - [x] **매장 관리** — `/stores` (목록·검색·CRUD, StoreForm/StoreTable)
 - [x] **태그 관리** — `/tags` (목록·검색·relationType 필터·CRUD, TagForm/TagTable)
 - [x] **공지 관리** — `/announcements` (CRUD + 인라인 isActive Switch 토글 + 활성 필터)
+- [x] **배너 관리** — `/banners` (CRUD + 이미지 업로드 + 정렬 순서(sortOrder) + 인라인 isActive 토글 + 활성 필터)
 - [x] **감사 로그** — `/audit-logs` (읽기 전용, targetType/action 필터, diff JSON 모달, super_admin)
 - [x] **회원 관리** — `/users` (목록·검색·상태 필터·상태 변경 모달, BE에서 PII 자동 마스킹: super_admin 만 풀 노출)
 - [x] **제품 관리** — `/products` (CRUD, 갤러리 이미지 URL 다중 입력, 태그 chip multi-select, 노출 플래그 + 성별 타겟, 상세 페치 분리)
@@ -50,6 +51,7 @@
 - [x] **매장 라우트** — `GET/POST /admin/stores`, `PATCH/DELETE /admin/stores/:storeId` (store.service 재사용)
 - [x] **태그 라우트** — `GET/POST /admin/tags`, `PATCH/DELETE /admin/tags/:tagId` (`adminTag.service`, 감사 로그 기록)
 - [x] **공지 라우트** — `GET/POST /admin/announcements`, `PATCH/DELETE /admin/announcements/:announceId` (`adminAnnouncement.service`, isActive 토글, 감사 로그 기록)
+- [x] **배너 라우트** — `GET/POST /admin/banners`, `PATCH/DELETE /admin/banners/:bannerId` (`adminBanner.service`, sortOrder/isActive, 감사 로그 기록) + 마이그레이션 `0008_banners.sql`·`0009_seed_banners.sql` + `POST /admin/images` 업로드(multipart, max 5MB)
 - [x] **감사 로그 라우트** — `GET /admin/audit-logs` (`adminAuditLog.service`, admin_users JOIN, super_admin 전용, 읽기 전용)
 - [x] **회원 라우트** — `GET /admin/users`, `PATCH /admin/users/:userId/status` (`adminUser.service`, super_admin 외엔 이메일 마스킹, 상태 변경 감사 기록)
 - [x] **제품 라우트** — `GET/POST /admin/products`, `GET/PATCH/DELETE /admin/products/:productId` (`adminProduct.service`, 트랜잭션 + 이미지/태그 동시 갱신, FK CASCADE)
@@ -70,12 +72,21 @@
 
 ## 다음 단계 (v1 In Scope, vision §4)
 
-> 화면 7종 모두 완료. 남은 항목은 검증·테스트·운영 보조뿐.
+> 화면 9종 모두 완료. 남은 항목은 검증·테스트·운영 보조뿐.
+
+### 역할 재편 + 매장 가격·재고 (2026-06-15, gotcha-map-policy 기준) — 완료
+- [x] **역할 재편** — super_admin→admin, content_manager+support_staff→staff, **member(점주) 신규**. 마이그레이션 0010(enum+store_id), AdminRole/nav/PII/첫화면 재배선
+- [x] **매장 가격·재고(store_products) 편집** — BE `GET/POST/PATCH/DELETE /admin/stores/:storeId/products` (admin/staff 전 매장, member 자기 매장 `requireStoreOwnership`). 소비자 가격 비교가 실데이터로 동작
+- [x] **매장별 카탈로그 오버라이드** — `/admin/stores/:storeId/catalog` (마이그레이션 0011 `store_product_overrides`, 옵션 A). 소비자 `getStoreGachaList` 병합 노출
+- [x] **운영자 관리 화면 `/admins`** (admin 전용) — 계정 생성(role+매장 배정)/상태/비번 재설정, 전부 감사 로그
+- [x] **`/my-store`(member)·`/stores/[storeId]`(admin/staff)** 화면 + 공통 StoreProductsManager. Admin FE build 통과
+- [x] **BE 테스트** — 139 passed(소유권/운영자관리 통합 추가) + 라이브 E2E(가격·재고·오버라이드·운영자생성·옵션A 병합)
 
 ### v1 잔여
-- [ ] **브라우저 인터랙티브 검증** — 실 브라우저에서 8개 화면(login + 7 nav) 클릭 동선 검증 (현재 typecheck/lint/build·E2E curl 까지만)
-- [ ] **어드민 controller/service 통합 테스트** — 현재 schema(`admin.schema.test.ts`) + middleware(`adminAuth.middleware.test.ts`)만. controller/service 레벨 테스트 부재
-- [ ] **제품-스토어 가격 매핑 편집 UX** — 현재 BE에 `store_products` 스키마는 있으나 어드민 편집 화면 없음. 제품 상세에서 매장별 가격 추가/수정 (별도 패널 또는 페이지)
+- [ ] **브라우저 인터랙티브 검증** — 실 브라우저에서 전 화면(member `/my-store`, admin `/admins`, `/stores/[storeId]` 포함) 클릭 동선 검증 (현재 typecheck/lint/build·BE E2E 까지만)
+- [ ] **어드민 controller/service 통합 테스트** — BE는 통합 테스트 보강됨. 어드민 **FE** 자동 테스트는 여전히 부재
+- [x] **stores 권한 불일치 정리** — (구) FE/BE 통일. 이후 역할 재편으로 `/admin/stores` = `admin`+`staff` 로 재정의
+- [x] **제품-스토어 가격 매핑 편집 UX** — 위 "역할 재편 + 매장 가격·재고" 로 구현 완료
 
 ### 인증 보강 — 완료
 - [x] FE refresh token 흐름 (401 → /admin/refresh → 재시도, 1073abf)
@@ -116,7 +127,8 @@ brew services start mariadb
 # 마이그레이션 + 시드 (최초 1회 또는 새 마이그레이션 추가 시)
 cd /Users/null_ong2/Documents/heath/programming/projects/gachamap-be
 npm run db:migrate
-npm run db:seed:admin -- --email=ops@gachamap.io --password=admin1234 --name=운영자 --role=super_admin
+npm run db:seed:admin -- --email=ops@gachamap.io --password=admin1234 --name=운영자 --role=admin
+# 점주(member) 계정은 매장 배정 필수: --role=member --store-id=<storeId> (또는 admin 로그인 후 /admins 화면에서 생성)
 
 # BE / FE dev 서버
 npm run dev          # gachamap-be → http://localhost:8060

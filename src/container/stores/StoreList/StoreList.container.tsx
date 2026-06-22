@@ -1,6 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Button, Heading, Input, Modal, Stack, Text } from 'null_ong2-design-system';
+import type { AdminStore } from '@/types/store.types';
 import { StoreTable } from '@/ui/stores/StoreTable/StoreTable.ui';
 import { StoreForm } from '@/ui/stores/StoreForm/StoreForm.ui';
 import { ListStateView } from '@/ui/common/ListStateView/ListStateView.ui';
@@ -28,7 +30,12 @@ export function StoreListContainer() {
     isDeleting,
   } = useStoreList();
 
+  const router = useRouter();
   const selectedStoreId = modal.mode === 'edit' ? modal.entity.storeId : null;
+
+  const handleManageProducts = (store: AdminStore) => {
+    router.push(`/stores/${store.storeId}`);
+  };
 
   return (
     <Stack spacing="lg">
@@ -63,6 +70,7 @@ export function StoreListContainer() {
           stores={stores}
           onEdit={openEdit}
           onDelete={requestDelete}
+          onManageProducts={handleManageProducts}
           selectedStoreId={selectedStoreId}
         />
 

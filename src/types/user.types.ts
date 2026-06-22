@@ -3,7 +3,7 @@ export type AdminUserStatus = 1 | 0 | -1;
 
 export interface AdminUser {
   userId: string;
-  /** support_staff 토큰으로 받은 응답에서는 BE 가 마스킹한 값. */
+  /** admin·staff 에게는 BE 가 풀 노출 (gotcha-map-policy §7). */
   email: string;
   nickname: string;
   gender: 'M' | 'F' | null;
