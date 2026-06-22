@@ -5,6 +5,14 @@
 .yarn/install-state.gz
 .ruler/*
 
+
+#AI
+ruler/**
+CLAUDE.md
+AGENTS.md
+START-HERE.md
+**.md
+
 # testing
 /coverage
 
@@ -34,3 +42,4 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
